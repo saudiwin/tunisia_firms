@@ -1,0 +1,65 @@
+---
+title: "Tunisia Firms Data Exploration"
+output: html_notebook
+---
+
+```{r, include=FALSE}
+# Front matter
+
+require(dplyr)
+require(tidyr)
+require(tibble)
+require(ggplot2)
+require(magrittr)
+require(plotly)
+
+source('data_functions.R')
+
+ Sys.setenv("plotly_username" = "bobkubinec")
+  Sys.setenv("plotly_api_key" = "8q00qm53km")
+
+```
+
+First load all of the relevant classement files:
+
+
+```{r, warning=FALSE}
+class2014 <- read_in('data/tabula-)
+
+class2015 <- read_in('data/tabula-Classement 2015.tsv',shiftrow=FALSE,range_col=FALSE,
+                     group1=40,group2=501,group3=166,data_year='2015',year1='year_2012',
+                     year2='year_2013')
+
+
+class2016 <- read_in('data/tabula-Classement 2016.tsv',shiftrow=TRUE,range_col=TRUE,group1=40,
+                     group2=518,group3=160,data_year='2016',year1='year_2013',year2='year_2014')
+
+```
+
+
+First exploration plot is just revenue by Groupes for the most recent year.
+
+```{r, warning=FALSE}
+class2016 %>% filter(money_type=='groupes') %>% plot_ly(y=~year_2014,x=~year_2013) %>% add_markers()
+```
+
+Second plot is under/over revenues for the 2016 Groupes.
+
+```{r, warning=TRUE}
+out_plot <- class2016 %>% filter(money_type=='groupes') %>%  mutate(winloss=year_2014 - year_2013) %>% plot_ly(y=~winloss,x=~reorder(firm_name,winloss),color=~sector) %>% 
+  add_bars() %>% layout(xaxis=list(title="",showticklabels=FALSE),
+                        yaxis=list(title=""),
+                        title="Tunisia Conglomerate 2016 Revenue Growth, Thousands TND")
+plotly_POST(out_plot)
+print(out_plot)
+```
+
+
+Let's do the same with the 2015 data
+
+```{r}
+class2015 %>% filter(money_type=='groupes') %>%  mutate(winloss=year_2013 - year_2012) %>% plot_ly(y=~winloss,x=~reorder(firm_name,winloss),color=~sector) %>% 
+  add_bars() %>% layout(xaxis=list(title="",showticklabels=FALSE),
+                        yaxis=list(title=""))
+```
+
